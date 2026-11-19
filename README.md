@@ -1,42 +1,30 @@
-# Starter AAI Project
+# Budiman HRMS
 
-Starter base for the **Agentic AI Workshop**. It holds
-the starter app and the workshop project brief.
+The project for the Leave Request module. It is set up and ready, but nothing
+is built yet: you build it from the HRMS document, spec first.
 
-## What's in this repo
+## What is here
 
-| Path | What it is |
-|------|------------|
-| `starter-project/` | The starter app: Budiman Company's HR Management System with login for four roles (Employee, Supervisor, HR, Admin). |
-| `Agentic AI - Workshop Project Brief.pdf` | The scenario, workflow and scope for the workshop project. |
+- `docs/Agentic AI - HRMS Doc.pdf`: the project document. What to build, for whom, and why, including the tables the database needs (section 7.2).
+- `docs/templates/`: blank spec files (requirements, design, tasks) to copy.
+- `docs/specs/`: where your specs go.
+- `AGENTS.md`: the rules the AI follows in this project. You write the first version.
+- A blank Next.js app with TypeScript and Tailwind CSS. Prisma and bcryptjs are listed in `package.json` but not set up yet.
 
-## The starter app
+## Getting started
 
-A Next.js + TypeScript app with Prisma and SQLite. In the workshop you add the
-**Leave Request module** to it using Spec-Driven Development: interview, specs,
-review, then build.
-
-See [`starter-project/README.md`](starter-project/README.md) for the full
-details: tech stack, demo accounts, scripts and specs.
-
-## Quick start
-
-You need **Node.js 20.9 or newer** and Git.
+You need **Node.js 20.9 or newer** (check with `node --version`) and Git.
 
 ```bash
-cd starter-project
-npm install
-cp .env.example .env
-npm run db:migrate
-npm run db:seed
-npm run dev            # http://localhost:3000
+npm install     # install the tools (needs internet)
+npm run dev     # start the app at http://localhost:3000
 ```
 
-## How the workshop works
+You should see a page that says the project is set up. If you do, you are ready.
 
-1. Start a chat with the AI agent and type: `Read AGENTS.md, then start the interview.`
-2. The agent interviews you, then writes the specs with you. You approve each step.
-3. The agent builds one task at a time and you check each one in the browser.
+**If something goes wrong**
 
-When something changes, fix the spec first, then rebuild. The agent's
-instructions are in [`starter-project/AGENTS.md`](starter-project/AGENTS.md).
+| Problem | Fix |
+|---------|-----|
+| `npm install` fails while downloading Prisma engines | Your network blocks `binaries.prisma.sh`. Try another network, or ask the facilitator. |
+| `Port 3000 is in use` | Another app is running. Stop it, or run `npm run dev -- -p 3001`. |
