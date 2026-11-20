@@ -1,5 +1,6 @@
-// Budiman HRMS — data model. See docs/specs/02-design.md §1.
-// Leave-request models will be added when their requirements are specified.
+// Budiman HRMS — data model. See docs/specs/02-design.md §1 (login) and
+// "Leave Request – Design" §1 (leave). Dates that hold a day (start/end) are
+// stored as UTC midnight; the UI formats them yyyy-MM-dd.
 
 generator client {
   provider = "prisma-client-js"
@@ -21,4 +22,43 @@ model User {
   division     String
   designation  String
   createdAt    DateTime @default(now())
+
+  submitted     LeaveRequest[] @relation("EmployeeRequests")
+  supervised    LeaveRequest[] @relation("SupervisorRequests")
+  hrDecisions   LeaveRequest[] @relation("HrDecisions")
+}
+
+/// The five fixed choices on the leave form (Reference C, document §7.2).
+/// Seeded by name; no screen changes them.
+model LeaveType {
+  id       Int            @id @default(autoincrement())
+  name     String         @unique
+
+  requests LeaveRequest[]
+}
+
+/// One row per leave request (design leave §1). Status is one of the seven
+/// codes in design leave §2; only the transition function may write it.
+model LeaveRequest {
+  id               Int       @id @default(autoincrement())
+  employeeId       Int
+  supervisorId     Int
+  leaveTypeId      Int
+  otherTypeText    String?   // only when type is Other, then required (rule 11)
+  startDate        DateTime
+  endDate          DateTime
+  status           String    @default("PENDING_SUPERVISOR")
+  supervisorRemark String?   // required when the supervisor rejects (rule 16)
+  hrOfficerId      Int?      // set by the first HR decision (rule 17)
+  hrRemark         String?   // required when HR rejects (rule 16)
+  submittedAt      DateTime  @default(now())
+  signedAt         DateTime?
+  sentToHrAt       DateTime?
+  decidedAt        DateTime?
+  cancelledAt      DateTime?
+
+  employee   User      @relation("EmployeeRequests", fields: [employeeId], references: [id])
+  supervisor User      @relation("SupervisorRequests", fields: [supervisorId], references: [id])
+  hrOfficer  User?     @relation("HrDecisions", fields: [hrOfficerId], references: [id])
+  leaveType  LeaveType @relation(fields: [leaveTypeId], references: [id])
 }

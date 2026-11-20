@@ -43,6 +43,29 @@ Each role lands on its own home page: `/employee`, `/supervisor`, `/hr`,
 `/admin`. Tick **Remember me** to stay signed in for 30 days; otherwise
 closing the browser signs you out.
 
+## Leave flow (demo walk)
+
+The leave module replaces the paper form: employee submits, supervisor signs,
+employee sends, HR decides, admin watches. Try it end to end with two browser
+windows:
+
+1. **employee-1@budiman.com** → *New leave request* → pick type, dates and
+   Supervisor 1 → *Submit request* → confirm → the request appears in
+   *My requests* as **Pending supervisor**.
+2. **supervisor-1@budiman.com** → sees it under *Waiting for me* → opens it →
+   *Sign* → confirm → status becomes **Signed**. (Rejecting needs a remark.)
+3. **employee-1** again → the Signed request now offers *Send to HR* →
+   confirm → status **Pending HR**, and it lands in the HR queue.
+4. **hr-1@budiman.com** → sees the whole queue → opens the request →
+   *Approve* → confirm → **Approved** (officer and decision date are stamped).
+   Rejecting also requires a remark.
+
+Every step needs the two-step confirm panel, final requests are read-only,
+and nobody can decide on their own request. **admin@budiman.com** can watch
+every request (with a status filter) but changes nothing. Supervisors apply
+for leave themselves on the same form — their own request then goes through
+the other supervisor.
+
 **If something goes wrong**
 
 | Problem | Fix |

@@ -144,3 +144,232 @@ Do Low only if time is left, and only if you ask.
 everything else depends on. 3→4 build the login flow, 5→6 the homes and then the
 guards (a guard before the homes would have nothing to guard), 7–8 finish the session
 lifecycle and abuse protection, and 9 is the document §8 "Check" step for this module.
+
+---
+
+# Leave Request – Tasks
+
+> **This file answers:** In what order do we build the leave flow, and how do we
+> check each step?
+> **Who:** The AI drafts it. You review it.
+>
+> Build one task at a time, in order. When a task is done, the AI changes its
+> Status to Done. If something is wrong, fix the spec first, then ask the AI to
+> rebuild.
+>
+> Sources: `01-requirements.md` (leave stories L1–L15 / checks AC-12–AC-27),
+> `02-design.md` (leave rules 11–21, screens §5, file map §6), and
+> `docs/Agentic AI - HRMS Doc.pdf` (§5, §6 FR-02…FR-08, §7.2). Every task traces
+> back to these. Task numbers continue the login table (1–9, all Done).
+
+**Priority.** Do **High** (10–16) first, then **Medium** (17–19). Task 20 is Low
+and only built if you ask (FR-09, document §6).
+
+| Status | # | Task | Priority | Checks (from requirements §4) |
+|--------|---|------|----------|-------------------------------|
+| Done | 10 | LeaveType + LeaveRequest tables; seed the five leave types | High | feeds AC-12…AC-27 (design leave §1) |
+| Done | 11 | New leave request — form, validations, submit | High | AC-12, AC-13, AC-14, AC-15 |
+| Done | 12 | Employee list + detail + cancel | High | AC-16, AC-21 (employee), AC-22 (submit/cancel), AC-23 |
+| Done | 13 | Supervisor list + detail + sign / reject + submitter mode | High | AC-17, AC-18, AC-21 (supervisor), AC-22 (sign/reject), AC-24 (submitter view) |
+| Done | 14 | Employee sends the signed request to HR | High | AC-19 |
+| Done | 15 | HR queue + approve / reject, officer recorded | High | AC-20, AC-21 (HR), AC-22 (approve/HR-reject) |
+| Done | 16 | Authorization hardening — forged actions and URLs | High | AC-24, re-run every tamper note in AC-14/17/20 |
+| Done | 17 | Supervisors may apply — verify end to end | Medium | AC-25 |
+| Done | 18 | Admin table + status filter, view only | Medium | AC-26 |
+| Done | 19 | Whole-module check, lint, README | Medium | AC-12…AC-27 |
+| Done | 20 | Employee status filter *(build only if asked)* | Low | AC-27 |
+
+---
+
+## Task 10 – LeaveType + LeaveRequest tables; seed leave types *(High)*
+
+> Database-first, like login Tasks 1→2: the tables exist before any screen can
+> read or write a request.
+
+- **Goal:** `LeaveType` and `LeaveRequest` models of design leave §1 exist with
+  named relations to `User` (employee, supervisor, hrOfficer) and to `LeaveType`;
+  the seed upserts the five Reference C types and stays safe to re-run; no demo
+  requests are seeded.
+- **Files:** `prisma/schema.prisma`, `prisma/seed.ts`.
+- **Check:**
+  • Run `npx prisma migrate dev` — it creates the `LeaveType` and `LeaveRequest` tables.
+  • In `npx prisma studio` the `LeaveRequest` table shows every field of design §1
+    (employeeId, supervisorId, leaveTypeId, otherTypeText, startDate, endDate,
+    status, supervisorRemark, hrOfficerId, hrRemark, submittedAt, signedAt,
+    sentToHrAt, decidedAt, cancelledAt).
+  • The `LeaveType` table holds exactly the five Reference C names; run
+    `npm run db:seed` twice — still five, no duplicates.
+  • Try inserting a request with a `leaveTypeId` of 999 — the foreign key rejects it.
+
+## Task 11 – New leave request: form, validations, submit *(High)*
+
+- **Goal:** `/employee/leave/new` posts through the two-step confirm (rule 20) to a
+  server action that validates rules 11–14 and 21 and creates the row. Covers the
+  employee case; supervisors use the same screen (verified in Task 17).
+- **Files:** `src/app/(home)/employee/leave/new/page.tsx`, `…/new/actions.ts`,
+  `src/lib/leave.ts` (overlap check, supervisor options, submit transition),
+  `src/components/leave/confirm-action.tsx`.
+- **Check:** AC-12, AC-13, AC-14, AC-15.
+  • Sign in as `employee-1@budiman.com` → New leave request → Annual leave,
+    2026-12-01→2026-12-05, Supervisor 1 → confirm panel → confirm → success message;
+    Prisma Studio shows the row as `PENDING_SUPERVISOR` with `submittedAt` set (AC-12).
+  • End before start → "End date cannot be before the start date"; Other with empty
+    description → required error; Other + "House move" → submits (AC-13).
+  • Dropdown lists only Supervisor 1 and Supervisor 2; a DevTools-tampered value is
+    refused by the server; with Employee 1's division set to `Marketing` in Studio,
+    the form blocks with an explanation (AC-14).
+  • A second request overlapping an active one is refused, naming the conflict (AC-15).
+
+## Task 12 – Employee list, detail, and cancel *(High)*
+
+- **Goal:** `/employee` lists the user's own requests with status badge, type,
+  dates, duration and remarks; the detail page shows the date trail and offers
+  **Cancel** (confirm panel) only while `PENDING_SUPERVISOR`.
+- **Files:** `src/app/(home)/employee/page.tsx`, `…/leave/[id]/page.tsx`,
+  `…/leave/[id]/actions.ts`, `src/components/leave/status-badge.tsx`,
+  `src/components/leave/request-table.tsx`, `src/lib/leave.ts` (scoped list).
+- **Check:** AC-16, AC-21 (employee rows), AC-22 (submit + cancel), AC-23.
+  • The 1–5 Dec request reads **5 days**; a same-day one reads **1 day** (AC-16).
+  • The list shows only `employee-1`'s own requests, with statuses and remarks (AC-21).
+  • Cancel on a Pending-supervisor request → confirm panel → status `CANCELLED`;
+    cancelling the panel changes nothing in Studio; a success message shows (AC-22, AC-23).
+  • A Signed request's detail shows **no** Cancel button; the same dates can be
+    re-submitted after a cancel (AC-23).
+
+## Task 13 – Supervisor list, sign and reject *(High)*
+
+- **Goal:** `/supervisor` shows requests assigned to the logged-in supervisor —
+  waiting + past — plus their own submissions; the detail of an assigned request
+  offers **Sign** and **Reject** (remark required), each behind a confirm panel,
+  and only the assigned supervisor reaches that decision view (rule 19). Own
+  submissions open the same page in **submitter mode**: decision fields read-only,
+  never Sign/Reject (rule 21), with **Cancel** while `PENDING_SUPERVISOR`
+  (reusing the employee action) — **Send to HR** joins it in Task 14. This is
+  what lets interview Q4 (L13) finish without new code in Task 17.
+- **Files:** `src/app/(home)/supervisor/page.tsx`,
+  `…/supervisor/leave/[id]/page.tsx`, `…/leave/[id]/actions.ts`,
+  `src/components/leave/remark-field.tsx`, `src/lib/leave.ts`.
+- **Check:** AC-17, AC-18, AC-21 (supervisor rows), AC-22 (sign/reject).
+  • `supervisor-1` sees the waiting request, signs it after the confirm panel →
+    status `SIGNED`, `signedAt` set (AC-17).
+  • `supervisor-2` never sees it; opening its detail URL as `supervisor-2` bounces
+    like a nonexistent id (AC-17).
+  • Reject with empty remark → "Remark is required"; with a remark → 
+    `REJECTED_SUPERVISOR` and the employee can read it; afterwards no action
+    button appears for anyone (AC-18).
+  • `supervisor-1` opens their **own** submission from the `/supervisor` list:
+    decision fields are read-only, no Sign/Reject appears (rule 21), and Cancel
+    is offered while Pending supervisor (AC-24).
+
+## Task 14 – Employee sends the signed request to HR *(High)*
+
+- **Goal:** on the employee's detail page, **Send to HR** appears only when the
+  request is `SIGNED`; the confirmed action sets `PENDING_HR` + `sentToHrAt` and
+  the request appears in the HR queue (page arrives in Task 15 — verify via
+  Studio now, and in Task 15 from the UI). The same button joins the supervisor
+  page's **submitter mode** (L13, interview Q4).
+- **Files:** `src/app/(home)/employee/leave/[id]/page.tsx`, `…/[id]/actions.ts`,
+  and `src/app/(home)/supervisor/leave/[id]/page.tsx` (button wired into the
+  submitter view, reusing the same server action).
+- **Check:** AC-19 (first half).
+  • As `employee-1`, the Signed request offers Send to HR → confirm → status
+    `PENDING_HR`, `sentToHrAt` set, success message.
+  • A `PENDING_SUPERVISOR` or `SIGNED`-again tampered POST changes nothing; no
+    Send-to-HR button shows before the Signed state.
+  • `supervisor-1`'s own Signed request, opened from `/supervisor`, also offers
+    **Send to HR** → confirm → `PENDING_HR` + `sentToHrAt` (AC-24, L13).
+
+## Task 15 – HR queue, approve and reject *(High)*
+
+- **Goal:** `/hr` lists the whole `PENDING_HR` queue (any division) plus past
+  decisions; the queue detail offers **Approve** / **Reject** (remark required)
+  behind confirm panels; the deciding officer and `decidedAt` are stamped once
+  (rule 17) and no action remains on Final rows (rule 18).
+- **Files:** `src/app/(home)/hr/page.tsx`, `src/app/(home)/hr/leave/[id]/page.tsx`,
+  `…/hr/leave/[id]/actions.ts`.
+- **Check:** AC-19 (UI half), AC-20, AC-21 (HR rows), AC-22 (approve/HR-reject).
+  • The request sent in Task 14 now appears for both `hr-1` and `hr-2` (AC-19, AC-21).
+  • `hr-1` approves after the confirm panel → `APPROVED`, detail shows officer
+    **HR 1** + decision date (AC-20).
+  • On another item `hr-2` must enter a remark to reject → `REJECTED_HR`, officer
+    **HR 2** (AC-20).
+  • Decided requests show no buttons in `/hr`, `/employee`, `/supervisor` (AC-20).
+
+## Task 16 – Authorization hardening: forged actions and URLs *(High)*
+
+> The login module had a dedicated guard task (Task 6); this is the same idea for
+> the leave actions — build-time checks are not enough, so probe them.
+
+- **Goal:** prove rules 15, 18, 19 and 21 hold against a hostile browser: the only
+  trusted input is the request `id`; everything else is re-derived server-side.
+- **Files:** wherever a probe finds a hole (expect `…/[id]/actions.ts` files and
+  `src/lib/leave.ts`).
+- **Check:** AC-24, plus re-run each tamper note:
+  • AC-24: `supervisor-1`'s dropdown excludes themselves; a DevTools-tampered
+    self-supervisor submission is refused; their own signed request offers them no
+    sign button.
+  • Edit a confirm form in DevTools to target **another user's request id** → refused.
+  • Post a reject action to a request that is already `SIGNED` (wrong current
+    status) → refused; post any action to a Final request → refused (rule 18).
+  • As `hr-1`, open an `employee`'s detail URL, and as `employee-1` an `hr` detail
+    URL → bounce like a nonexistent id (rule 19).
+  • Disable JavaScript and repeat sign + approve → the server-side confirm panel
+    still gates the action (rule 20).
+
+## Task 17 – Supervisors may apply — end to end *(Medium)*
+
+- **Goal:** verify interview Q4 works through the whole chain using the same
+  screens (no new code expected; fix what the walk breaks).
+- **Files:** none expected; fixes where the walk fails.
+- **Check:** AC-25.
+  • `supervisor-1` submits Unpaid leave 2027-01-04→2027-01-08 choosing Supervisor 2.
+  • `supervisor-2` signs → `supervisor-1` sends to HR → `hr-1` approves; each
+    person's list shows the matching status at every step.
+  • HR and Admin accounts show no **New leave request** anywhere (rule 14).
+
+## Task 18 – Admin table with status filter, view only *(Medium)*
+
+- **Goal:** `/admin` renders every request — employee, supervisor, type, dates,
+  status — newest `submittedAt` first, with a status dropdown filter via `?status=`;
+  zero mutating controls (FR-08, L14).
+- **Files:** `src/app/(home)/admin/page.tsx` (reuses `request-table.tsx`).
+- **Check:** AC-26, AC-21 (admin row).
+  • As `admin@budiman.com` the table lists every request from all the checks above,
+    newest submitted first, including requests supervisors submitted themselves.
+  • Picking `Approved` in the filter shows exactly the approved rows (and the URL
+    carries `?status=APPROVED`, so it can be bookmarked).
+  • Tab through the whole page: no button or link changes data.
+
+## Task 19 – Whole-module check, lint, README *(Medium)*
+
+- **Goal:** the leave module passes its acceptance list end to end on a fresh
+  database; lint is clean; the README explains the flow and demo walk.
+- **Files:** `README.md` (leave section), any file needing small fixes found below.
+- **Check:** AC-12…AC-27 in order, then lint.
+  • Fresh start: delete `prisma/dev.db`, `npx prisma migrate dev`, `npm run db:seed`,
+    `npm run dev`.
+  • Walk the leave acceptance checklist of `01-requirements.md` §4 top to bottom —
+    every row passes (AC-27 excepted — it belongs to the Low task 20).
+  • `npm run lint` → no errors (AGENTS.md: before every commit).
+  • `git status` → still no `.env`, `prisma/dev.db`, `.next/` or `node_modules/`.
+  • README gains a short "Leave flow" section: the walk employee-1 → supervisor-1
+    → employee-1 → hr-1, using the demo accounts.
+
+## Task 20 – Employee status filter *(Low — build only if asked)*
+
+- **Goal:** the employee's own list gains a status dropdown (`?status=`), same
+  pattern as the admin filter (L15, FR-09).
+- **Files:** `src/app/(home)/employee/page.tsx`.
+- **Check:** AC-27.
+  • As `employee-1`, filter by `Signed` → only signed rows remain; clearing the
+    filter shows all again.
+
+---
+
+**Build order notes (leave).** Task 10 is the database-first start like login
+1→2. 11→12 build the submitter's side (a list before there is anything to list
+would be untestable), 13 the deciding supervisor, 14 the employee's send step
+(the bridge into the queue), 15 the HR queue that receives it, 16 the guard-style
+hardening once every action exists to be forged — mirroring login Task 6. 17–18
+are the Medium items (FR-08 and interview Q4), 19 is the document §8 "Check"
+step for this module, and 20 is the only Low, kept last per FR-09.
