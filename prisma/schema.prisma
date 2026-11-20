@@ -1,0 +1,24 @@
+// Budiman HRMS — data model. See docs/specs/02-design.md §1.
+// Leave-request models will be added when their requirements are specified.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Everyone who can log in (document §7.2). Email is the login identifier.
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  icNumber     String   @unique // identity card no., format xx-xxxxxx
+  email        String   @unique // work email, always @budiman.com, lowercase
+  passwordHash String // bcrypt hash — never the plain password
+  role         String // EMPLOYEE | SUPERVISOR | HR | ADMIN (one per user)
+  division     String
+  designation  String
+  createdAt    DateTime @default(now())
+}
