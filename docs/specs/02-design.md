@@ -358,9 +358,9 @@ like a request that does not exist — no leak of its existence).
 | Route | Who | What it shows | Status |
 |-------|-----|---------------|--------|
 | `/employee` | Employee | My requests: status badge, type, dates, duration, remarks when set; **New leave request** button; status filter (L15) | To do |
-| `/employee/leave/new` | Employee | The form: leave type (Reference C), Other-description field (shown/required when Other), start & end dates, supervisor dropdown (rule 13) or the "no supervisor in division" block; confirm panel on submit | To do |
+| `/employee/leave/new` | Employee or Supervisor (own submissions — matrix, Task 11) | The form: leave type (Reference C), Other-description field (required when Other), start & end dates, supervisor dropdown (rule 13) or the "no supervisor in division" block; confirm panel on submit | To do |
 | `/employee/leave/[id]` | Employee (own only) | One request: all fields, dates trail, remarks; actions **Send to HR** (when `SIGNED`) and **Cancel** (when `PENDING_SUPERVISOR`), each behind a confirm panel | To do |
-| `/supervisor` | Supervisor | "Waiting for me" (`PENDING_SUPERVISOR` assigned to me) + my past ones + my own submissions with their status | To do |
+| `/supervisor` | Supervisor | "Waiting for me" (`PENDING_SUPERVISOR` assigned to me) + my past ones + my own submissions with their status; **New leave request** button → `/employee/leave/new` (supervisors apply on the same form, L13) | To do |
 | `/supervisor/leave/[id]` | Supervisor — request assigned to them, **or** submitted by them | Assigned: full detail + **Sign** / **Reject** (remark field required on reject) behind confirm panels. Own submission: same page in **submitter mode** — decision fields read-only, no Sign/Reject ever (rule 21) — with the submitter's **Cancel** (while `PENDING_SUPERVISOR`) and **Send to HR** (when `SIGNED`), the same actions as `/employee/leave/[id]` (L13) | To do |
 | `/hr` | HR | The queue (`PENDING_HR`, any division) + past decisions | To do |
 | `/hr/leave/[id]` | HR | One queue request + **Approve** / **Reject** (remark required) behind confirm panels; decided items show officer + dates, no actions | To do |

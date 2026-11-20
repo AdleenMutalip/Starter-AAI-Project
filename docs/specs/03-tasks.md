@@ -167,17 +167,17 @@ and only built if you ask (FR-09, document §6).
 
 | Status | # | Task | Priority | Checks (from requirements §4) |
 |--------|---|------|----------|-------------------------------|
-| To do | 10 | LeaveType + LeaveRequest tables; seed the five leave types | High | feeds AC-12…AC-27 (design leave §1) |
-| To do | 11 | New leave request — form, validations, submit | High | AC-12, AC-13, AC-14, AC-15 |
-| To do | 12 | Employee list + detail + cancel | High | AC-16, AC-21 (employee), AC-22 (submit/cancel), AC-23 |
-| To do | 13 | Supervisor list + detail + sign / reject + submitter mode | High | AC-17, AC-18, AC-21 (supervisor), AC-22 (sign/reject), AC-24 (submitter view) |
-| To do | 14 | Employee sends the signed request to HR | High | AC-19 |
-| To do | 15 | HR queue + approve / reject, officer recorded | High | AC-20, AC-21 (HR), AC-22 (approve/HR-reject) |
-| To do | 16 | Authorization hardening — forged actions and URLs | High | AC-24, re-run every tamper note in AC-14/17/20 |
-| To do | 17 | Supervisors may apply — verify end to end | Medium | AC-25 |
-| To do | 18 | Admin table + status filter, view only | Medium | AC-26 |
-| To do | 19 | Whole-module check, lint, README | Medium | AC-12…AC-27 |
-| To do | 20 | Employee status filter *(build only if asked)* | Low | AC-27 |
+| Done | 10 | LeaveType + LeaveRequest tables; seed the five leave types | High | feeds AC-12…AC-27 (design leave §1) |
+| Done | 11 | New leave request — form, validations, submit | High | AC-12, AC-13, AC-14, AC-15 |
+| Done | 12 | Employee list + detail + cancel | High | AC-16, AC-21 (employee), AC-22 (submit/cancel), AC-23 |
+| Done | 13 | Supervisor list + detail + sign / reject + submitter mode | High | AC-17, AC-18, AC-21 (supervisor), AC-22 (sign/reject), AC-24 (submitter view) |
+| Done | 14 | Employee sends the signed request to HR | High | AC-19 |
+| Done | 15 | HR queue + approve / reject, officer recorded | High | AC-20, AC-21 (HR), AC-22 (approve/HR-reject) |
+| Done | 16 | Authorization hardening — forged actions and URLs | High | AC-24, re-run every tamper note in AC-14/17/20 |
+| Done | 17 | Supervisors may apply — verify end to end | Medium | AC-25 |
+| Done | 18 | Admin table + status filter, view only | Medium | AC-26 |
+| Done | 19 | Whole-module check, lint, README | Medium | AC-12…AC-27 |
+| Done | 20 | Employee status filter *(build only if asked)* | Low | AC-27 |
 
 ---
 
