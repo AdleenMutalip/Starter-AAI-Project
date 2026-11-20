@@ -16,15 +16,15 @@ Do Low only if time is left, and only if you ask.
 
 | Status | # | Task | Priority | Checks (from requirements §4) |
 |--------|---|------|----------|-------------------------------|
-| To do | 1 | Database and Users table | High | feeds AC-06 (design §1, §7) |
-| To do | 2 | Seed the six demo users | High | AC-06 |
-| To do | 3 | Login page (form only) | High | AC-11 (U11, design §4) |
-| To do | 4 | Sign-in: bcrypt check + session cookie | High | AC-02, AC-08, AC-09 |
-| To do | 5 | Role home pages + root redirect | High | AC-01 |
-| To do | 6 | Server-side access control | High | AC-03, AC-04, AC-10 |
-| To do | 7 | Logout | High | AC-05 |
-| To do | 8 | Rate-limit failed logins | High | AC-07 |
-| To do | 9 | Whole-module check, lint, README | Medium | all AC-01…AC-11 |
+| Done | 1 | Database and Users table | High | feeds AC-06 (design §1, §7) |
+| Done | 2 | Seed the six demo users | High | AC-06 |
+| Done | 3 | Login page (form only) | High | AC-11 (U11, design §4) |
+| Done | 4 | Sign-in: bcrypt check + session cookie | High | AC-02, AC-08, AC-09 |
+| Done | 5 | Role home pages + root redirect | High | AC-01 |
+| Done | 6 | Server-side access control | High | AC-03, AC-04, AC-10 |
+| Done | 7 | Logout | High | AC-05 |
+| Done | 8 | Rate-limit failed logins | High | AC-07 |
+| Done | 9 | Whole-module check, lint, README | Medium | all AC-01…AC-11 |
 
 ---
 

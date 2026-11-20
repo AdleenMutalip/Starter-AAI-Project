@@ -94,6 +94,36 @@ One row per screen. "Who" is enforced on the server per rule 6, not just by hidi
 Each home page has a **Log out** button (server action, rule 5). Buttons and forms are
 server actions throughout — no hand-written API routes (document §7.1).
 
+### Visual theme (login + home screens)
+
+Agreed 2026-11-20 from the mock in `login-design.png` (repo root). **Look only** —
+no screen, route or behaviour changes.
+
+- **Page background:** full-viewport vertical gradient from the mock's sky, no
+  illustration (gradient-only decision): `#86C7F2 → #5D93E8 → #6C5DD3 → #432E9E`
+  (top to bottom).
+- **Card:** one centred "glass" card per screen — translucent indigo
+  `rgba(129,140,248,0.25)` over the gradient, `backdrop-blur`, rounded 24px,
+  1px border `rgba(255,255,255,0.25)`, soft shadow, inner padding 32px, width 384px
+  (login) / 672px (home, header + content inside one card).
+- **Login card:** title **"Login"** centred, white, bold, 30px. Fields are
+  **pills**: fully rounded, translucent white `rgba(255,255,255,0.25)`, white text,
+  placeholder `rgba(255,255,255,0.7)`, a white inline person icon (email) and lock
+  icon (password) inside the left of each field. Field labels move to placeholders +
+  `aria-label` (names stay "Work email" / "Password" so the hand checks still work).
+  "Remember me" checkbox + label in white sit below the fields on the left.
+  **No "Forgot Password" and no "Register" links** (requirements §5 keeps them out).
+- **Buttons:** bright sky-blue pill `#2CABE7` (hover `#1B95D3`), white bold text —
+  Sign in (login card) and Log out (home header, right side).
+- **Home card:** header row with brand "Budiman HRMS" (white, bold, 18px, left) and
+  the Log out pill (right); content below: page title white 24px, body text
+  `rgba(255,255,255,0.85)`.
+- **Messages** (behaviour unchanged): errors render as a rounded panel
+  `rgba(225,29,72,0.75)` white text inside the card; the "Signed out." success
+  message as `rgba(16,185,129,0.75)` white text.
+- **Spacing:** field vertical rhythm 16px; 24px between fields and the button row;
+  elements full width of the card.
+
 ## 5. Where the code lives
 
 | Folder / file | What's in it |
